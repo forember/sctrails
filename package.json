@@ -1,0 +1,19 @@
+{
+  "name": "sctrails",
+  "version": "1.0.0",
+  "description": "Downloads trail data from the SC Trails website so that it can be better searched.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/NighttimeDriver50000/sctrails.git"
+  },
+  "author": "Emberlynn McKinney",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NighttimeDriver50000/sctrails/issues"
+  },
+  "homepage": "https://github.com/NighttimeDriver50000/sctrails#readme"
+}
