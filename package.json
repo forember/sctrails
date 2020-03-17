@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/NighttimeDriver50000/sctrails/issues"
   },
-  "homepage": "https://github.com/NighttimeDriver50000/sctrails#readme"
+  "homepage": "https://github.com/NighttimeDriver50000/sctrails#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3"
+  }
 }
