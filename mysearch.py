@@ -15,7 +15,7 @@ for trail in trails:
 
 results = []
 for trail in trails:
-  if 'Hike' in trail['activities'] and trail['length'] > 5 and trail['difficulty'] > 1:
+  if 'Hike' in trail['activities'] and trail['length'] > 2 and trail['difficulty'] > 1:
     results.append(trail)
 
 results.sort(key=lambda t: t['length'], reverse=True)
