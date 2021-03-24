@@ -36,6 +36,9 @@ const fs = require('fs');
   if (nextPage) {
     getSCTrailsPagesStartingWith(nextPage, trails);
   } else {
-    fs.writeFile('data.json', JSON.stringify(trails));
+    fs.writeFile('data.json', JSON.stringify(trails), (err) => {
+      if (err) throw err;
+      console.log('Saved data.json!');
+    });
   }
 }('https://www.sctrails.net/trails/trails/p/1', []));
