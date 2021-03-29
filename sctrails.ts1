@@ -1,0 +1,207 @@
+<!-- LIGHT -->
+
+[[Home]](https://embermckinney.com/)
+
+<%
+import json
+import re
+
+length_re = re.compile(r"^\s*([0-9.]+)\s*miles\s*$")
+difficulties = ["Easy", "Moderate", "Difficult", "Strenuous"]
+
+trails = json.load(open("data.json"))
+for trail in trails:
+  trail["length"] = float(length_re.match(trail["length"]).group(1))
+  trail["difficulty"] = difficulties.index(trail["difficulty"])
+end
+
+activities = [
+    "ATV",
+    "Bike",
+    "Equestrian",
+    "Hike",
+    "Mountain Bike",
+    "Paved",
+    "Walk",
+    "Water"]
+%>
+
+# SC Trails Search
+
+<form>
+<p>Find trails that match:</p>
+
+<div>
+<div class="d-inline-block">
+<div class="d-inline-block">
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="activityAnyAll" value="any" id="activityAny">
+  <label class="form-check-label" for="activityAny">
+    Any of:
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="activityAnyAll" value="all" id="activityAll" checked>
+  <label class="form-check-label" for="activityAll">
+    All of:
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="activityAnyAll" value="none" id="activityNone">
+  <label class="form-check-label" for="activityNone">
+    None of:
+  </label>
+</div>
+</div>
+
+<div class="d-inline-block">
+<select class="form-select" multiple aria-label="Activity Selection" name="activitySelection">
+  % for activity in activities:
+    <option value="{{activity}}" {{"selected" if activity == "Hike" else ""}}>
+      {{activity}}
+    </option>
+  % end
+</select>
+</div>
+</div>
+
+<div class="d-inline-block">
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="difficultyLeastMost" value="least" id="difficultyLeast">
+  <label class="form-check-label" for="difficultyLeast">
+    At least:
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="difficultyLeastMost" value="most" id="difficultyMost" checked>
+  <label class="form-check-label" for="difficultyMost">
+    At most:
+  </label>
+</div>
+<select class="form-select" aria-label="Difficulty Selection" name="difficultySelection">
+  % for difficulty in difficulties:
+    <option value="{{difficulty}}" {{"selected" if difficulty == "Strenuous" else ""}}>
+      {{difficulty}}
+    </option>
+  % end
+</select>
+</div>
+
+<div class="d-inline-block">
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="lengthLeastMost" value="least" id="lengthLeast" checked>
+  <label class="form-check-label" for="lengthLeast">
+    At least:
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="lengthLeastMost" value="most" id="lengthMost">
+  <label class="form-check-label" for="lengthMost">
+    At most:
+  </label>
+</div>
+<div class="input-group mb-3">
+  <input type="number" value="0.0" step="0.5" name="lengthInput">
+  <span class="input-group-text">miles</span>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" name="lengthSort" value="1" id="lengthSort">
+  <label class="form-check-label" for="lengthSort">
+    Sort by length
+  </label>
+</div>
+</div>
+</div>
+
+<button type="submit" class="btn btn-primary">
+  Search
+</button>
+</form>
+
+- - -
+
+<%
+matched = []
+search = ""
+search_valid = False
+try:
+  if _GET["activityAnyAll"].lower() == "any":
+    activityAnyAll = any
+    search += "Any of "
+  elif _GET["activityAnyAll"].lower() == "all":
+    activityAnyAll = all
+    search += "All of "
+  else:
+    activityAnyAll = lambda a: not any(a)
+    search += "None of "
+  end
+  activitySelection = _FORM.getlist("activitySelection")
+  search += ", ".join(activitySelection) + "; "
+  if _GET["difficultyLeastMost"].lower() == "least":
+    difficultyLeastMost = lambda t, s: t >= s
+    search += "At least "
+  else:
+    difficultyLeastMost = lambda t, s: t <= s
+    search += "At most "
+  end
+  difficultySelection = difficulties.index(_GET["difficultySelection"])
+  search += _GET["difficultySelection"] + "; "
+  if _GET["lengthLeastMost"].lower() == "least":
+    lengthLeastMost = lambda t, s: t >= s
+    search += "At least "
+  else:
+    lengthLeastMost = lambda t, s: t <= s
+    search += "At most "
+  end
+  lengthInput = float(_GET["lengthInput"])
+  search += "{} miles".format(lengthInput)
+  for trail in trails:
+    activityMatches = [activity in trail["activities"] for activity in activitySelection]
+    if not activityAnyAll(activityMatches):
+      continue
+    end
+    if not difficultyLeastMost(trail["difficulty"], difficultySelection):
+      continue
+    end
+    if not lengthLeastMost(trail["length"], lengthInput):
+      continue
+    end
+    matched.append(trail)
+  end
+  if "lengthSort" in _GET:
+    matched.sort(key=lambda t: t["length"])
+    search += "; Sort by length"
+  end
+  search += "."
+  search_valid = True
+except KeyError:
+  pass
+end
+%>
+
+% if search_valid:
+Search: {{search}}
+
+# Results
+
+% for trail in matched:
+## [{{trail["name"]}}](https://sctrails.net/{{trail["href"].lstrip("/")}})
+
+Activities: {{", ".join(trail["activities"])}}  
+Length: {{trail["length"]}} miles  
+Difficulty: {{difficulties[trail["difficulty"]]}}
+
+{{trail["description"].strip()}}
+% end
+% end
+
+[[View the Backend Code]](https://git.embermckinney.com/embers/sctrails)
+
+<style>
+div.d-inline-block {
+  vertical-align: top;
+  padding: 4px;
+}
+</style>
+
+<!-- NOADD -->
