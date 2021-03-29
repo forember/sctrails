@@ -55,7 +55,7 @@ activities = [
 </div>
 
 <div class="d-inline-block">
-<select class="form-select" multiple aria-label="Activity Selection" name="activitySelection">
+<select class="form-select" multiple aria-label="Activity Selection" name="activitySelection[]">
   % for activity in activities:
     <option value="{{activity}}" {{"selected" if activity == "Hike" else ""}}>
       {{activity}}
@@ -120,11 +120,16 @@ activities = [
 
 - - -
 
+%#{{_GET}}
+
 <%
 matched = []
 search = ""
 search_valid = False
 try:
+  if not _GET:
+    _GET = {}
+  end
   if _GET["activityAnyAll"].lower() == "any":
     activityAnyAll = any
     search += "Any of "
@@ -135,7 +140,7 @@ try:
     activityAnyAll = lambda a: not any(a)
     search += "None of "
   end
-  activitySelection = _FORM.getlist("activitySelection")
+  activitySelection = _FORM.getlist("activitySelection[]")
   search += ", ".join(activitySelection) + "; "
   if _GET["difficultyLeastMost"].lower() == "least":
     difficultyLeastMost = lambda t, s: t >= s
